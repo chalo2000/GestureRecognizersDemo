@@ -32,6 +32,7 @@ class ViewController: UIViewController {
         ornamentImageView.image = UIImage(named: "candycane")
         ornamentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
         ornamentImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
+        ornamentImageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
         ornamentImageView.isUserInteractionEnabled = true
         view.addSubview(ornamentImageView)
         
@@ -39,11 +40,14 @@ class ViewController: UIViewController {
         presentImageView.image = UIImage(named: "greenPresent")
         presentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
         presentImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
+        presentImageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
         presentImageView.isUserInteractionEnabled = true
         view.addSubview(presentImageView)
         
         treeImageView.translatesAutoresizingMaskIntoConstraints = false
         treeImageView.image = UIImage(named: "tree")
+        treeImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
+        treeImageView.isUserInteractionEnabled = true
         view.addSubview(treeImageView)
     }
     
@@ -131,6 +135,21 @@ class ViewController: UIViewController {
                 make.width.equalTo(imageView.frame.width)
                 make.height.equalTo(imageView.frame.height)
             }
+        }
+    }
+    
+    @objc func scaleImage(for sender: UIPinchGestureRecognizer) {
+        guard let imageView = sender.view as! UIImageView? else { return }
+        if sender.state == .began || sender.state == .changed {
+            imageView.transform = CGAffineTransform(scaleX: sender.scale, y: sender.scale)
+        }
+        
+        if sender.state == .ended {
+            imageView.snp.updateConstraints { make in
+                make.width.equalTo(imageView.frame.width)
+                make.height.equalTo(imageView.frame.height)
+            }
+            imageView.transform = CGAffineTransform(scaleX: 1, y: 1)
         }
     }
     
