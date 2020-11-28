@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SnapKit
 
 class ViewController: UIViewController {
 
@@ -24,13 +25,17 @@ class ViewController: UIViewController {
         setupConstraints()
     }
     
-    private func setupViews() {
+    func setupViews() {
         ornamentImageView.translatesAutoresizingMaskIntoConstraints = false
-        ornamentImageView.image = UIImage(named: "ornament3")
+        ornamentImageView.image = UIImage(named: "candycane")
+        ornamentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
+        ornamentImageView.isUserInteractionEnabled = true
         view.addSubview(ornamentImageView)
         
         presentImageView.translatesAutoresizingMaskIntoConstraints = false
-        presentImageView.image = UIImage(named: "present3")
+        presentImageView.image = UIImage(named: "greenPresent")
+        presentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
+        presentImageView.isUserInteractionEnabled = true
         view.addSubview(presentImageView)
         
         treeImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -38,53 +43,86 @@ class ViewController: UIViewController {
         view.addSubview(treeImageView)
     }
     
-    private func setupConstraints() {
+    func setupConstraints() {
         let ornamentImageViewSize: CGSize = getDimensions(for: ornamentImageView)
         let presentImageViewSize: CGSize = getDimensions(for: presentImageView)
         let screenWidth: CGFloat = UIScreen.main.bounds.width
         let treeImageViewSize: CGSize = CGSize(width: 100, height: 150)
         
-        NSLayoutConstraint.activate([
-            ornamentImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            ornamentImageView.topAnchor.constraint(equalTo: view.topAnchor, constant: screenWidth / 3),
-            ornamentImageView.widthAnchor.constraint(equalToConstant: ornamentImageViewSize.width),
-            ornamentImageView.heightAnchor.constraint(equalToConstant: ornamentImageViewSize.height)
-        ])
+        ornamentImageView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalToSuperview().offset(screenWidth / 3)
+            make.width.equalTo(ornamentImageViewSize.width)
+            make.height.equalTo(ornamentImageViewSize.height)
+        }
         
-        NSLayoutConstraint.activate([
-            presentImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            presentImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -screenWidth / 3),
-            presentImageView.widthAnchor.constraint(equalToConstant: presentImageViewSize.width),
-            presentImageView.heightAnchor.constraint(equalToConstant: presentImageViewSize.height)
-        ])
+        presentImageView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().inset(screenWidth / 3)
+            make.width.equalTo(presentImageViewSize.width)
+            make.height.equalTo(presentImageViewSize.height)
+        }
         
-        NSLayoutConstraint.activate([
-            treeImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            treeImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            treeImageView.widthAnchor.constraint(equalToConstant: treeImageViewSize.width),
-            treeImageView.heightAnchor.constraint(equalToConstant: treeImageViewSize.height)
-        ])
+        treeImageView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.equalTo(treeImageViewSize.width)
+            make.height.equalTo(treeImageViewSize.height)
+        }
     }
     
-    private func getDimensions(for imageView: UIImageView) -> CGSize {
+    @objc func swapImage(for sender: UITapGestureRecognizer) {
+        guard let imageView = sender.view as! UIImageView? else { return }
+        switch imageView {
+        case ornamentImageView:
+            if imageView.image == UIImage(named: "candycane") {
+                imageView.image = UIImage(named: "lights")
+            } else if imageView.image == UIImage(named: "lights") {
+                imageView.image = UIImage(named: "gingerbread")
+            } else if imageView.image == UIImage(named: "gingerbread") {
+                imageView.image = UIImage(named: "candycane")
+            } else {
+                print("Invalid image for ornamentImageView")
+            }
+        case presentImageView:
+            if imageView.image == UIImage(named: "greenPresent") {
+                imageView.image = UIImage(named: "orangePresent")
+            } else if imageView.image == UIImage(named: "orangePresent") {
+                imageView.image = UIImage(named: "whitePresent")
+            } else if imageView.image == UIImage(named: "whitePresent") {
+                imageView.image = UIImage(named: "greenPresent")
+            } else {
+                print("Invalid image for presentImageView")
+            }
+        default:
+            break
+        }
+        
+        let imageViewSize: CGSize = getDimensions(for: imageView)
+        imageView.snp.updateConstraints { make in
+            make.width.equalTo(imageViewSize.width)
+            make.height.equalTo(imageViewSize.height)
+        }
+    }
+    
+    func getDimensions(for imageView: UIImageView) -> CGSize {
         var dimensions = CGSize(width: 0, height: 0)
         switch imageView {
         case ornamentImageView:
-            if imageView.image == UIImage(named: "ornament1") {
-                dimensions = CGSize(width: 100, height: 150)
-            } else if imageView.image == UIImage(named: "ornament2") {
+            if imageView.image == UIImage(named: "candycane") {
+                dimensions = CGSize(width: 50, height: 100)
+            } else if imageView.image == UIImage(named: "lights") {
                 dimensions = CGSize(width: 200, height: 50)
-            } else if imageView.image == UIImage(named: "ornament3") {
+            } else if imageView.image == UIImage(named: "gingerbread") {
                 dimensions = CGSize(width: 100, height: 150)
             } else {
                 print("Invalid image for ornamentImageView")
             }
         case presentImageView:
-            if imageView.image == UIImage(named: "present1") {
+            if imageView.image == UIImage(named: "greenPresent") {
                 dimensions = CGSize(width: 100, height: 100)
-            } else if imageView.image == UIImage(named: "present2") {
+            } else if imageView.image == UIImage(named: "orangePresent") {
                 dimensions = CGSize(width: 100, height: 100)
-            } else if imageView.image == UIImage(named: "present3") {
+            } else if imageView.image == UIImage(named: "whitePresent") {
                 dimensions = CGSize(width: 100, height: 100)
             } else {
                 print("Invalid image for presentImageView")
