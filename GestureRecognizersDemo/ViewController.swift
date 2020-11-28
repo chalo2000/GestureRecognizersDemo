@@ -16,11 +16,13 @@ class ViewController: UIViewController {
     let presentImageView: UIImageView = UIImageView()
     let treeImageView: UIImageView = UIImageView()
     
+    // MARK: Variables
+    var initialOrigin: CGPoint!
+    
     // MARK: Setup
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
         setupViews()
         setupConstraints()
     }
@@ -29,12 +31,14 @@ class ViewController: UIViewController {
         ornamentImageView.translatesAutoresizingMaskIntoConstraints = false
         ornamentImageView.image = UIImage(named: "candycane")
         ornamentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
+        ornamentImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
         ornamentImageView.isUserInteractionEnabled = true
         view.addSubview(ornamentImageView)
         
         presentImageView.translatesAutoresizingMaskIntoConstraints = false
         presentImageView.image = UIImage(named: "greenPresent")
         presentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
+        presentImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
         presentImageView.isUserInteractionEnabled = true
         view.addSubview(presentImageView)
         
@@ -101,6 +105,32 @@ class ViewController: UIViewController {
         imageView.snp.updateConstraints { make in
             make.width.equalTo(imageViewSize.width)
             make.height.equalTo(imageViewSize.height)
+        }
+    }
+    
+    @objc func moveImage(for sender: UIPanGestureRecognizer) {
+        guard let imageView = sender.view as! UIImageView? else { return }
+
+        let translation = sender.translation(in: imageView.superview)
+        if sender.state == .began {
+            initialOrigin = imageView.frame.origin
+        }
+        
+        if sender.state != .cancelled {
+           let newCenter = CGPoint(x: initialOrigin.x + translation.x, y: initialOrigin.y + translation.y)
+           imageView.frame.origin = newCenter
+        }
+        else {
+           imageView.frame.origin = initialOrigin
+        }
+        
+        if sender.state == .ended {
+            imageView.snp.remakeConstraints { make in
+                make.leading.equalToSuperview().offset(initialOrigin.x + translation.x)
+                make.top.equalToSuperview().offset(initialOrigin.y + translation.y)
+                make.width.equalTo(imageView.frame.width)
+                make.height.equalTo(imageView.frame.height)
+            }
         }
     }
     
