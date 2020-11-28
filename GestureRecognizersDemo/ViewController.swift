@@ -12,20 +12,24 @@ import SnapKit
 class ViewController: UIViewController {
 
     // MARK: UI Elements
+    
     let ornamentImageView: UIImageView = UIImageView()
     let presentImageView: UIImageView = UIImageView()
     let treeImageView: UIImageView = UIImageView()
     
     // MARK: Variables
+    
     var initialOrigin: CGPoint!
     
     // MARK: Constants
+    
     enum Decoration: Int {
         case ornament = 1
         case present = 2
     }
     
     // MARK: Setup
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -79,16 +83,9 @@ class ViewController: UIViewController {
         }
     }
     
-    func setupGestureRecognizers(for imageView: UIImageView) {
-        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
-        imageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
-        imageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
-        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(copyImage(for:)))
-        longPressGestureRecognizer.minimumPressDuration = 1
-        imageView.addGestureRecognizer(longPressGestureRecognizer)
-        imageView.isUserInteractionEnabled = true
-    }
+    // MARK: Actions
     
+    /** Sets the `sender` imageView to the next image in our hardcoded order upon tap */
     @objc func swapImage(for sender: UITapGestureRecognizer) {
         guard let imageView = sender.view as! UIImageView? else { return }
         switch imageView.tag {
@@ -123,6 +120,7 @@ class ViewController: UIViewController {
         }
     }
     
+    /** Moves the `sender` imageView in the direction of panning */
     @objc func moveImage(for sender: UIPanGestureRecognizer) {
         guard let imageView = sender.view as! UIImageView? else { return }
 
@@ -149,6 +147,7 @@ class ViewController: UIViewController {
         }
     }
     
+    /** Scales the `sender` imageView by the amount of pinching */
     @objc func scaleImage(for sender: UIPinchGestureRecognizer) {
         guard let imageView = sender.view as! UIImageView? else { return }
         if sender.state == .began || sender.state == .changed {
@@ -166,8 +165,9 @@ class ViewController: UIViewController {
         }
     }
     
+    /** Makes a single copy of the `sender` imageView after pressing for minimumPressDuration */
     @objc func copyImage(for sender: UILongPressGestureRecognizer) {
-        guard let imageView = sender.view as! UIImageView?, sender.state == .began else { return }
+        guard let imageView = sender.view as! UIImageView? else { return }
         let newImageView = UIImageView()
         newImageView.image = imageView.image
         setupGestureRecognizers(for: newImageView)
@@ -184,6 +184,9 @@ class ViewController: UIViewController {
         print("New image created")
     }
     
+    // MARK: Helpers
+    
+    /** Returns the hardcoded dimensions for the given `imageView` */
     func getDimensions(for imageView: UIImageView) -> CGSize {
         var dimensions = CGSize(width: 0, height: 0)
         switch imageView.tag {
@@ -212,7 +215,16 @@ class ViewController: UIViewController {
         }
         return dimensions
     }
-
-
+    
+    func setupGestureRecognizers(for imageView: UIImageView) {
+        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
+        imageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
+        imageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
+        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(copyImage(for:)))
+        longPressGestureRecognizer.minimumPressDuration = 1
+        imageView.addGestureRecognizer(longPressGestureRecognizer)
+        imageView.isUserInteractionEnabled = true
+    }
+    
 }
 
