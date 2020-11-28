@@ -19,6 +19,12 @@ class ViewController: UIViewController {
     // MARK: Variables
     var initialOrigin: CGPoint!
     
+    // MARK: Constants
+    enum Decoration: Int {
+        case ornament = 1
+        case present = 2
+    }
+    
     // MARK: Setup
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,27 +34,22 @@ class ViewController: UIViewController {
     }
     
     func setupViews() {
-        ornamentImageView.translatesAutoresizingMaskIntoConstraints = false
         ornamentImageView.image = UIImage(named: "candycane")
-        ornamentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
-        ornamentImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
-        ornamentImageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
-        ornamentImageView.isUserInteractionEnabled = true
+        setupGestureRecognizers(for: ornamentImageView)
+        ornamentImageView.tag = Decoration.ornament.rawValue
         view.addSubview(ornamentImageView)
         
-        presentImageView.translatesAutoresizingMaskIntoConstraints = false
         presentImageView.image = UIImage(named: "greenPresent")
-        presentImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
-        presentImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
-        presentImageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
-        presentImageView.isUserInteractionEnabled = true
+        setupGestureRecognizers(for: presentImageView)
+        presentImageView.tag = Decoration.present.rawValue
         view.addSubview(presentImageView)
         
-        treeImageView.translatesAutoresizingMaskIntoConstraints = false
         treeImageView.image = UIImage(named: "tree")
         treeImageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
+        treeImageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
         treeImageView.isUserInteractionEnabled = true
         view.addSubview(treeImageView)
+        view.sendSubviewToBack(treeImageView)
     }
     
     func setupConstraints() {
@@ -78,10 +79,20 @@ class ViewController: UIViewController {
         }
     }
     
+    func setupGestureRecognizers(for imageView: UIImageView) {
+        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(swapImage(for:))))
+        imageView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(moveImage(for:))))
+        imageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(scaleImage(for:))))
+        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(copyImage(for:)))
+        longPressGestureRecognizer.minimumPressDuration = 1
+        imageView.addGestureRecognizer(longPressGestureRecognizer)
+        imageView.isUserInteractionEnabled = true
+    }
+    
     @objc func swapImage(for sender: UITapGestureRecognizer) {
         guard let imageView = sender.view as! UIImageView? else { return }
-        switch imageView {
-        case ornamentImageView:
+        switch imageView.tag {
+        case Decoration.ornament.rawValue:
             if imageView.image == UIImage(named: "candycane") {
                 imageView.image = UIImage(named: "lights")
             } else if imageView.image == UIImage(named: "lights") {
@@ -91,7 +102,7 @@ class ViewController: UIViewController {
             } else {
                 print("Invalid image for ornamentImageView")
             }
-        case presentImageView:
+        case Decoration.present.rawValue:
             if imageView.image == UIImage(named: "greenPresent") {
                 imageView.image = UIImage(named: "orangePresent")
             } else if imageView.image == UIImage(named: "orangePresent") {
@@ -145,7 +156,9 @@ class ViewController: UIViewController {
         }
         
         if sender.state == .ended {
-            imageView.snp.updateConstraints { make in
+            imageView.snp.remakeConstraints { make in
+                make.leading.equalToSuperview().offset(imageView.frame.minX)
+                make.top.equalToSuperview().offset(imageView.frame.minY)
                 make.width.equalTo(imageView.frame.width)
                 make.height.equalTo(imageView.frame.height)
             }
@@ -153,10 +166,28 @@ class ViewController: UIViewController {
         }
     }
     
+    @objc func copyImage(for sender: UILongPressGestureRecognizer) {
+        guard let imageView = sender.view as! UIImageView?, sender.state == .began else { return }
+        let newImageView = UIImageView()
+        newImageView.image = imageView.image
+        setupGestureRecognizers(for: newImageView)
+        newImageView.tag = imageView.tag
+        view.addSubview(newImageView)
+        
+        newImageView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(imageView.frame.minX)
+            make.top.equalToSuperview().offset(imageView.frame.minY)
+            make.width.equalTo(imageView.frame.width)
+            make.height.equalTo(imageView.frame.height)
+        }
+        
+        print("New image created")
+    }
+    
     func getDimensions(for imageView: UIImageView) -> CGSize {
         var dimensions = CGSize(width: 0, height: 0)
-        switch imageView {
-        case ornamentImageView:
+        switch imageView.tag {
+        case Decoration.ornament.rawValue:
             if imageView.image == UIImage(named: "candycane") {
                 dimensions = CGSize(width: 50, height: 100)
             } else if imageView.image == UIImage(named: "lights") {
@@ -166,7 +197,7 @@ class ViewController: UIViewController {
             } else {
                 print("Invalid image for ornamentImageView")
             }
-        case presentImageView:
+        case Decoration.present.rawValue:
             if imageView.image == UIImage(named: "greenPresent") {
                 dimensions = CGSize(width: 100, height: 100)
             } else if imageView.image == UIImage(named: "orangePresent") {
