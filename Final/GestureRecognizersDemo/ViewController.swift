@@ -167,7 +167,7 @@ class ViewController: UIViewController {
     
     /** Makes a single copy of the `sender` imageView after pressing for minimumPressDuration */
     @objc func copyImage(for sender: UILongPressGestureRecognizer) {
-        guard let imageView = sender.view as! UIImageView? else { return }
+        guard let imageView = sender.view as! UIImageView?, sender.state == .began else { return }
         let newImageView = UIImageView()
         newImageView.image = imageView.image
         setupGestureRecognizers(for: newImageView)
